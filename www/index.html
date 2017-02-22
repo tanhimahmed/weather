@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <link rel="stylesheet" href="themes/is1073-weatherapp.min.css" />
+        <link rel="stylesheet" href="themes/jquery.mobile.icons.min.css" />
+        <link rel="stylesheet" href="assets/jquery.mobile-1.4.2/jquery.mobile-1.4.2.css" type="text/css"/>
+        <script src="assets/jquery-1.11.0.js" type="text/javascript"></script>
+        <script src="assets/jquery.mobile-1.4.2/jquery.mobile-1.4.2.js" type="text/javascript"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCysQ5uIw2XH9hoiiRBVKmuCE4e6VV6yuw"></script>
+        <title>Mobile Weather App</title>
+    <script>
+        $(document).ready(function(){
+            $("#btnGetWeather").on("click", function(){
+                var weatherLocation = $("#weatherSearch").val();
+                if(weatherLocation != ""){
+                    getWeatherData(weatherLocation);                
+                } else{
+                    alert("Please provide a location.");
+                }
+
+            });
+            // getLocation();
+        });
+
+        function getWeatherData(city) {
+            var apiKey = "1fecd7aa309361237eec1d1d180ff508";
+            var wsUrl = "http://api.openweathermap.org/data/2.5/weather?q=";
+            wsUrl = wsUrl + "city=" + city;
+            wsUrl = wsUrl + "&appid=" + apiKey;
+
+            $.getJSON(wsUrl, function(data){
+                console.log(data);
+                var weatherReport = data.name + "'s Weather Report:" + "<br/>";
+                weatherReport += "Forecast: " + data.weather[0].description + "<br/>";
+                weatherReport += "Temperature (in Kelvin): " + data.main.temp + "<br/>";
+                weatherReport += "High (in Kelvin): " + data.main.temp_max + "<br/>";
+                weatherReport += "Low (in Kelvin): " + data.main.temp_min + "<br/>";
+                weatherReport += "Humidity: " + data.main.humidity + "<br/>";
+                $("#weather").html(weatherReport);
+
+                initializeMap(data.coord.lat, data.coord.lon);
+                // console.log(data.main);
+            });        
+        }    
+
+        function getLocation() {
+            if(navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition);
+            } else {
+                console.log("Geolocation is not supported.")
+            }
+        }
+
+        function showPosition(position) {
+            console.log("Latitude: " + position.coords.latitude);
+            console.log("Longitude: " + position.coords.longitude);   
+            sessionStorage.setItem("Latitude", position.coords.latitude);
+            sessionStorage.setItem("Longitude", position.coords.longitude);
+            initializeMap();
+        }
+
+        function initializeMap(lat, lon){
+            var mapProp = {
+                center: new google.maps.LatLng(lat, lon),
+                zoom: 10,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+
+            var mapContainer = document.getElementById("googleMap")
+            var map = new google.maps.Map(mapContainer, mapProp);
+        }    
+        </script>
+        <meta name="viewport" content="width=device-width"/>
+    </head>
+    
+    <body>    
+        <!-- This is the first page containing google maps -->
+        <section id="showmap" data-role="page">
+            <div id="googleMap" style="width:400px;height:304px;"></div>
+            <div class="ui-content" role="main">
+                <input type="text" id="weatherSearch" value="" />
+                <input type="button" id="btnGetWeather" value="Find City" />
+                <p><a href="#todayforecast">View Location's Forecast (after searching for location)</a></p>
+            </div>
+        </section>
+        
+        <!-- This is the second page containing the current day's weather -->
+        <section id="todayforecast" data-role="page">
+            <div id="weather"></div>
+            <div class="ui-content" role="main">
+                <p><a href="#showmap">Back to Map Page</a></p>
+            </div> 
+        </section>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+    </body>
+</html>
